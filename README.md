@@ -4,8 +4,8 @@ _Farnworth's Fuck-Off Boot Strap_
 
 Install Go then: 
 
-```
-git clone https://github.com/notthelewis/ffbs --recurse-submodules
+```sh
+git clone https://github.com/notthelewis/ffbs.git --recurse-submodules; cd ./ffbs; git submodule init; git submodule update; go build -o ffbs .; ./ffbs
 ```
 
 This is some code that will setup my development environment from start to finish.
