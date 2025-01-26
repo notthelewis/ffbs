@@ -1,6 +1,7 @@
 package main
 
 // TODO: Handle package name differences between package managers
+// TODO: Fish shell setup
 
 import (
 	packagemanager "ffbs/packageManager"
@@ -17,7 +18,7 @@ import (
 // This is global because this is the easiest way to pass the package between subroutines when
 // you're lazy, don't give a fuck and don't intend to release the package to anyone other than
 // your own stupid self
-var packageManager string
+var packageManagerName string
 
 func main() {
 	wg := sync.WaitGroup{}
@@ -122,6 +123,11 @@ func installPackages() {
 		fmt.Println("Error installing discord", err.Error())
 		return
 	}
+
+	/* Linux specific packages */
+	if packageManagerName != "brew" {
+		installLinuxSpecificDeps(packageManager)
+	}
 }
 
 func installLinuxSpecificDeps(pm packagemanager.PackageManager) {
@@ -135,7 +141,6 @@ func installLinuxSpecificDeps(pm packagemanager.PackageManager) {
 		fmt.Println("Error installing make", err.Error())
 		return
 	}
-
 }
 
 func getPackageManager() packagemanager.PackageManager {
@@ -154,11 +159,11 @@ func getPackageManager() packagemanager.PackageManager {
 		fmt.Println("os = ", string(result))
 
 		if strings.Contains(osName, "Ubuntu") || strings.Contains(osName, "Debian") {
-			packageManager = "apt"
+			packageManagerName = "apt"
 		} else if strings.Contains(osName, "Fedora") {
-			packageManager = "dnf"
+			packageManagerName = "dnf"
 		} else if strings.Contains(osName, "Arch") {
-			packageManager = "pacman"
+			packageManagerName = "pacman"
 		} else {
 			panic("Unsupported OS " + osName)
 		}
@@ -173,17 +178,17 @@ func getPackageManager() packagemanager.PackageManager {
 				panic(brewInstallErr)
 			}
 		}
-		packageManager = "brew"
+		packageManagerName = "brew"
 	}
 
-	return packagemanager.New(packageManager)
+	return packagemanager.New(packageManagerName)
 }
 
 func openGithub() {
 	// At this point, we're either on Mac or some supported Linux distro
 	// so it's safe to assume that we can use 'open' or 'xdg-open'
 	var cmd *exec.Cmd
-	if packageManager == "brew" {
+	if packageManagerName == "brew" {
 		cmd = exec.Command("open", "https://github.com/login")
 	} else {
 		cmd = exec.Command("xdg-open", "https://github.com/login")
