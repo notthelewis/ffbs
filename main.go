@@ -203,22 +203,22 @@ func openGithub() {
 }
 
 // NOTE: This is dynamic because the conf is tiny and I don't know for sure what the path
-// to fish will be on the target machine
+// to tmux will be on the target machine
 func makeAlacrittyConfig(home string) {
 	err := os.MkdirAll(home+"/.config/alacritty", 0776)
 	if err != nil {
 		fmt.Println("Unable to create conf dir structure for alacritty", err.Error())
 	}
 
-	fishPath, err := exec.LookPath("fish")
+	tmuxPath, err := exec.LookPath("tmux")
 	if err != nil {
-		fmt.Println("Unable to find fish shell... aborting fish conf bootstrap", err.Error())
+		fmt.Println("Unable to find tmux shell... aborting alacritty conf bootstrap", err.Error())
 		return
 	}
 
 	sb := strings.Builder{}
 	sb.WriteString("shell = \"")
-	sb.WriteString(fishPath)
+	sb.WriteString(tmuxPath)
 	sb.WriteString("\"\n\n")
 	sb.WriteString("[window]\n")
 	sb.WriteString("startup_mode = \"fullscreen\"\n")
