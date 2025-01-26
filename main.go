@@ -22,17 +22,13 @@ var packageManagerName string
 
 func main() {
 	wg := sync.WaitGroup{}
-	wg.Add(5)
+	wg.Add(4)
 
 	installPackages()
 
 	home := os.Getenv("HOME")
-
-	go func() {
-		sshKeygen(home)
-		openGithub()
-		wg.Done()
-	}()
+	sshKeygen(home)
+	openGithub()
 
 	go func() {
 		if err := os.MkdirAll(home, 0776); err != nil {
@@ -46,7 +42,7 @@ func main() {
 	}()
 
 	go func() {
-		err := Copy("./floating-conf/tmux.conf", home+".tmux.conf")
+		err := Copy("./floating-conf/tmux.conf", home+"/.tmux.conf")
 		if err != nil {
 			fmt.Println("unable to copy tmux conf", err.Error())
 		}
@@ -279,6 +275,13 @@ func goFishing() {
 	err = cmd.Run()
 	if err != nil {
 		fmt.Println("Error installing nvm.fish", err.Error())
+		return
+	}
+
+	cmd = exec.Command(fishPath, "-c", "fish_vi_key_bindings")
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println("Error setting fish_vi_key_bindings", err.Error())
 		return
 	}
 
