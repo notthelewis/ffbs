@@ -22,7 +22,7 @@ var packageManagerName string
 
 func main() {
 	wg := sync.WaitGroup{}
-	wg.Add(4)
+	wg.Add(5)
 
 	installPackages()
 
@@ -56,6 +56,11 @@ func main() {
 
 	go func() {
 		makeAlacrittyConfig(home)
+		wg.Done()
+	}()
+
+	go func() {
+		goFishing()
 		wg.Done()
 	}()
 
@@ -233,6 +238,62 @@ func makeAlacrittyConfig(home string) {
 
 	if err := os.WriteFile(home+"/.config/alacritty/alacritty.toml", []byte(sb.String()), 0776); err != nil {
 		fmt.Println("Unable to write alacritty conf", err.Error())
+		return
+	}
+}
+
+// Fish shell plugins setup
+func goFishing() {
+	fishPath, err := exec.LookPath("fish")
+	if err != nil {
+		fmt.Println("Unable to find fish shell... aborting fish conf bootstrap", err.Error())
+		return
+	}
+
+	// Write fisher install script
+	toWrite := "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher"
+	err = os.WriteFile("/tmp/fisherInstall.sh", []byte(toWrite), 0776)
+	if err != nil {
+		fmt.Println("Error writing fisher install script", err.Error())
+		return
+	}
+
+	// Curl fisher, install fisher, install fisher plugins
+	cmd := exec.Command(fishPath, "/tmp/fisherInstall.sh")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println("Error installing fisher", err.Error())
+		return
+	}
+
+	err = os.Remove("/tmp/fisherInstall.sh")
+	if err != nil {
+		fmt.Println("Error removing fisher install script @ /tmp/fisherInstall.sh", err.Error())
+		return
+	}
+
+	cmd = exec.Command(fishPath, "-c", "fisher", "install", "jorgebucaran/nvm.fish")
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println("Error installing nvm.fish", err.Error())
+		return
+	}
+
+	// Auto function to load latest node version and swap caps and escape
+
+	toWrite = `if status is-interactive
+    # Commands to run in interactive sessions can go here
+    setxkbmap -option caps:swapescape
+    nvm use latest
+end`
+
+	cmd = exec.Command(fishPath, "-c", "echo '"+toWrite+"' > ~/.config/fish/config.fish")
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println("Error writing to fish config", err.Error())
 		return
 	}
 }
