@@ -1,5 +1,5 @@
 # TODO
 
 - [ ] Fish config
-- [ ] Alacritty config
+- [x] Alacritty config
 - [ ] package name conflicts across distros/OSes
