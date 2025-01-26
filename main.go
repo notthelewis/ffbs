@@ -1,8 +1,5 @@
 package main
 
-// TODO: Handle package name differences between package managers
-// TODO: Fish shell setup
-
 import (
 	packagemanager "ffbs/packageManager"
 	"fmt"
