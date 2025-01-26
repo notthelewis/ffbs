@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/atotto/clipboard"
 )
@@ -19,9 +20,39 @@ import (
 var packageManager string
 
 func main() {
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+
 	installPackages()
-	sshKeygen()
-	openGithub()
+
+	home := os.Getenv("HOME")
+
+	go func() {
+		sshKeygen(home)
+		openGithub()
+		wg.Done()
+	}()
+
+	go func() {
+		if err := os.MkdirAll(home, 0776); err != nil {
+			fmt.Println("Unable to create conf dir structure for nvim", err.Error())
+		}
+		err := CopyDirectory("nvim-lua", home+"/.config/nvim")
+		if err != nil {
+			fmt.Println("unable to copy nvim conf", err.Error())
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		err := Copy("./floating-conf/tmux.conf", home+".tmux.conf")
+		if err != nil {
+			fmt.Println("unable to copy tmux conf", err.Error())
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
 }
 
 func ExitOnError(err error) {
@@ -34,7 +65,7 @@ func ExitOnError(err error) {
 // NOTE: sshKeygen runs ssh-keygen interactively, then copy-pastes the ssh-key from a *hard-coded*
 // path, so if future me decides to store the key somewhere else- this is why it won't copy
 // you dumbfuck
-func sshKeygen() {
+func sshKeygen(home string) {
 	cmd := exec.Command("ssh-keygen")
 
 	// Allows go to take over cmd in & out
@@ -45,13 +76,13 @@ func sshKeygen() {
 	ExitOnError(cmd.Start())
 	ExitOnError(cmd.Wait())
 
-	publicKey, err := os.ReadFile(os.Getenv("HOME") + "/.ssh/id_ed25519.pub")
+	publicKey, err := os.ReadFile(home + "/.ssh/id_ed25519.pub")
 	if err != nil {
 		fmt.Println("Error reading public key", err)
 		return
 	}
 
-	// NOTE: I'm lazy, which is why I used a library
+	// NOTE: I'm lazy, which is why I used a library to copy the public key to the clipboard
 	if err := clipboard.WriteAll(string(publicKey)); err != nil {
 		fmt.Println("Error copying public key to clipboard", err)
 		return
