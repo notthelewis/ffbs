@@ -22,7 +22,7 @@ var packageManagerName string
 
 func main() {
 	wg := sync.WaitGroup{}
-	wg.Add(3)
+	wg.Add(4)
 
 	installPackages()
 
@@ -50,6 +50,12 @@ func main() {
 		if err != nil {
 			fmt.Println("unable to copy tmux conf", err.Error())
 		}
+
+		wg.Done()
+	}()
+
+	go func() {
+		makeAlacrittyConfig(home)
 		wg.Done()
 	}()
 
@@ -141,6 +147,7 @@ func installLinuxSpecificDeps(pm packagemanager.PackageManager) {
 		fmt.Println("Error installing make", err.Error())
 		return
 	}
+
 }
 
 func getPackageManager() packagemanager.PackageManager {
@@ -195,4 +202,37 @@ func openGithub() {
 	}
 
 	ExitOnError(cmd.Run())
+}
+
+// NOTE: This is dynamic because the conf is tiny and I don't know for sure what the path
+// to fish will be on the target machine
+func makeAlacrittyConfig(home string) {
+	err := os.MkdirAll(home+"/.config/alacritty", 0776)
+	if err != nil {
+		fmt.Println("Unable to create conf dir structure for alacritty", err.Error())
+	}
+
+	fishPath, err := exec.LookPath("fish")
+	if err != nil {
+		fmt.Println("Unable to find fish shell... aborting fish conf bootstrap", err.Error())
+		return
+	}
+
+	sb := strings.Builder{}
+	sb.WriteString("shell = \"")
+	sb.WriteString(fishPath)
+	sb.WriteString("\"\n\n")
+	sb.WriteString("[window]\n")
+	sb.WriteString("startup_mode = \"fullscreen\"\n")
+	sb.WriteString("padding = { x = 10, y = 10 }\n")
+
+	if err := os.MkdirAll(home+"/.config/alacritty", 0776); err != nil {
+		fmt.Println("Unable to create conf dir structure for alacritty", err.Error())
+		return
+	}
+
+	if err := os.WriteFile(home+"/.config/alacritty/alacritty.toml", []byte(sb.String()), 0776); err != nil {
+		fmt.Println("Unable to write alacritty conf", err.Error())
+		return
+	}
 }
