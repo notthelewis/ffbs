@@ -53,7 +53,7 @@ func main() {
 	}()
 
 	go func() {
-		goFishing()
+		goFishing(home)
 		wg.Done()
 	}()
 
@@ -236,7 +236,7 @@ func makeAlacrittyConfig(home string) {
 }
 
 // Fish shell plugins setup
-func goFishing() {
+func goFishing(home string) {
 	fishPath, err := exec.LookPath("fish")
 	if err != nil {
 		fmt.Println("Unable to find fish shell... aborting fish conf bootstrap", err.Error())
@@ -290,10 +290,18 @@ func goFishing() {
     nvm use latest
 end`
 
+	// Add auto function to fish config
 	cmd = exec.Command(fishPath, "-c", "echo '"+toWrite+"' > ~/.config/fish/config.fish")
 	err = cmd.Run()
 	if err != nil {
 		fmt.Println("Error writing to fish config", err.Error())
+		return
+	}
+
+	// Copy fish_prompt to fish conf
+	err = Copy("./floating-conf/fish_prompt.fish", home+"/.config/fish/functions/fish_prompt.fish")
+	if err != nil {
+		fmt.Println("Error copying fish_prompt.fish", err.Error())
 		return
 	}
 }
