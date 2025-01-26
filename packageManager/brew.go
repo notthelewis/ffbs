@@ -19,27 +19,3 @@ func (a Brew) Install(packageName string, opts ...string) error {
 	//
 	// return exec.Command("apt", args...).Run()
 }
-
-// TODO: Flesh out required methods
-
-func (a Brew) IsInstalled(packageName string) bool {
-	return false
-}
-
-func (a Brew) Remove(packageName string, opts ...string) error {
-
-	return nil
-}
-
-func (a Brew) Update(packageName string, opts ...string) error {
-
-	return nil
-}
-
-func (a Brew) Upgrade(packageName string, opts ...string) error {
-	return nil
-}
-
-func (a Brew) Version() string {
-	return ""
-}

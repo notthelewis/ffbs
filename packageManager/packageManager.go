@@ -2,11 +2,6 @@ package packagemanager
 
 type PackageManager interface {
 	Install(packageName string, opts ...string) error
-	IsInstalled(packageName string) bool
-	Remove(packageName string, opts ...string) error
-	Update(packageName string, opts ...string) error
-	Upgrade(packageName string, opts ...string) error
-	Version() string
 	String() string
 }
 

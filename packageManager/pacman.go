@@ -19,27 +19,3 @@ func (a Pacman) Install(packageName string, opts ...string) error {
 	//
 	// return exec.Command("apt", args...).Run()
 }
-
-// TODO: Flesh out required methods
-
-func (a Pacman) IsInstalled(packageName string) bool {
-	return false
-}
-
-func (a Pacman) Remove(packageName string, opts ...string) error {
-
-	return nil
-}
-
-func (a Pacman) Update(packageName string, opts ...string) error {
-
-	return nil
-}
-
-func (a Pacman) Upgrade(packageName string, opts ...string) error {
-	return nil
-}
-
-func (a Pacman) Version() string {
-	return ""
-}

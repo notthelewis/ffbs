@@ -19,27 +19,3 @@ func (a Dnf) Install(packageName string, opts ...string) error {
 	//
 	// return exec.Command("apt", args...).Run()
 }
-
-// TODO: Flesh out required methods
-
-func (a Dnf) IsInstalled(packageName string) bool {
-	return false
-}
-
-func (a Dnf) Remove(packageName string, opts ...string) error {
-
-	return nil
-}
-
-func (a Dnf) Update(packageName string, opts ...string) error {
-
-	return nil
-}
-
-func (a Dnf) Upgrade(packageName string, opts ...string) error {
-	return nil
-}
-
-func (a Dnf) Version() string {
-	return ""
-}
